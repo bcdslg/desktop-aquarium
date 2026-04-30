@@ -1,0 +1,34 @@
+# Build output
+build/
+out/
+bin/
+obj/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.opensdf
+*.sdf
+*.ipch
+*.tlog
+*.lastbuildstate
+
+# Local tooling
+.claude/
+.codex/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+*.log
