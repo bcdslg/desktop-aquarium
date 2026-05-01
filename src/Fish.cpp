@@ -226,6 +226,7 @@ Fish::Fish(Fish&& other) noexcept
       m_baseScale(other.m_baseScale),
       m_uiScale(other.m_uiScale),
       m_hasStripe(other.m_hasStripe),
+      m_schoolId(other.m_schoolId),
       m_type(other.m_type),
       m_color(other.m_color),
       m_bodyGradient(other.m_bodyGradient) {
@@ -247,6 +248,7 @@ Fish& Fish::operator=(Fish&& other) noexcept {
         m_baseScale = other.m_baseScale;
         m_uiScale = other.m_uiScale;
         m_hasStripe = other.m_hasStripe;
+        m_schoolId  = other.m_schoolId;
         m_type      = other.m_type;
         m_color     = other.m_color;
         memcpy(m_baseBody, other.m_baseBody, sizeof(m_baseBody));
@@ -258,8 +260,8 @@ Fish& Fish::operator=(Fish&& other) noexcept {
 
 void Fish::Update(float dt, const BoidsContext& ctx) {
     Vec2 sep   = Separation(ctx) * SEPARATION_WEIGHT;
-    Vec2 ali   = Alignment(ctx)  * ALIGNMENT_WEIGHT;
-    Vec2 coh   = Cohesion(ctx)   * COHESION_WEIGHT;
+    Vec2 ali   = ctx.freeSwim ? Vec2() : Alignment(ctx)  * ALIGNMENT_WEIGHT;
+    Vec2 coh   = ctx.freeSwim ? Vec2() : Cohesion(ctx)   * COHESION_WEIGHT;
     Vec2 food  = SeekFood(ctx);
     Vec2 avoid = ctx.avoidForce;
     Vec2 dir = m_velocity.Normalized();
@@ -600,10 +602,13 @@ Vec2 Fish::Separation(const BoidsContext& ctx) const {
 }
 
 Vec2 Fish::Alignment(const BoidsContext& ctx) const {
+    // Solo fish don't align with anyone
+    if (ctx.selfSchoolId < 0) return {};
     Vec2 avgVel;
     int count = 0;
     for (int i = 0; i < ctx.count; ++i) {
         if (i == ctx.selfIndex) continue;
+        if (ctx.schoolIds[i] != ctx.selfSchoolId) continue;
         if ((ctx.positions[i] - m_position).Length() < ALIGNMENT_RADIUS) {
             avgVel += ctx.velocities[i];
             ++count;
@@ -617,10 +622,13 @@ Vec2 Fish::Alignment(const BoidsContext& ctx) const {
 }
 
 Vec2 Fish::Cohesion(const BoidsContext& ctx) const {
+    // Solo fish don't cohere with anyone
+    if (ctx.selfSchoolId < 0) return {};
     Vec2 center;
     int count = 0;
     for (int i = 0; i < ctx.count; ++i) {
         if (i == ctx.selfIndex) continue;
+        if (ctx.schoolIds[i] != ctx.selfSchoolId) continue;
         if ((ctx.positions[i] - m_position).Length() < COHESION_RADIUS) {
             center += ctx.positions[i];
             ++count;

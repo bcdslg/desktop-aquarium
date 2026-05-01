@@ -5,12 +5,15 @@
 struct BoidsContext {
     const Vec2* positions;     // array of all fish positions
     const Vec2* velocities;    // array of all fish velocities
+    const int*  schoolIds;     // array of school IDs per fish (-1 = solo)
     int   count;               // total fish count
     int   selfIndex;           // index of this fish in the arrays
+    int   selfSchoolId;        // school ID of this fish
     const Vec2* foodPositions; // array of food particle positions
     int   foodCount;           // number of active food particles
     float foodDetectRadius;
     Vec2  avoidForce;          // edge-avoidance force pre-computed for this fish
+    bool  freeSwim = false;    // when true, fish don't school (no alignment/cohesion)
 };
 
 class Fish {
@@ -27,7 +30,9 @@ public:
 
     const Vec2& Position() const { return m_position; }
     const Vec2& Velocity() const { return m_velocity; }
+    int SchoolId() const { return m_schoolId; }
     void SetSize(float s) { m_uiScale = s; }
+    void SetSchoolId(int id) { m_schoolId = id; }
 
 private:
     Vec2 m_position;
@@ -41,6 +46,7 @@ private:
     float m_baseScale = 1.0f;
     float m_uiScale = 1.0f;
     bool  m_hasStripe = false;
+    int   m_schoolId = -1;      // -1 = solo, >= 0 = school index
 
     FishType     m_type;
     FishColor    m_color;

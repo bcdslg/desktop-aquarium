@@ -70,6 +70,7 @@ HMENU TrayIcon::BuildMenu(HWND hwnd) {
     AppendMenu(menu, MF_POPUP, (UINT_PTR)countMenu, L"鱼的数量");
 
     HMENU schoolMenu = ::CreatePopupMenu();
+    AppendMenu(schoolMenu, MF_STRING | (m_schoolCount == 0 ? MF_CHECKED : 0), ID_SCHOOL_COUNT_0, L"0 群（自由游动）");
     AppendMenu(schoolMenu, MF_STRING | (m_schoolCount == 1 ? MF_CHECKED : 0), ID_SCHOOL_COUNT_1, L"1 群");
     AppendMenu(schoolMenu, MF_STRING | (m_schoolCount == 2 ? MF_CHECKED : 0), ID_SCHOOL_COUNT_2, L"2 群");
     AppendMenu(schoolMenu, MF_STRING | (m_schoolCount == 3 ? MF_CHECKED : 0), ID_SCHOOL_COUNT_3, L"3 群");

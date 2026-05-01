@@ -86,10 +86,13 @@ static void RespawnFish(int count, int width, int height) {
         FishType type;
     };
 
+    // schoolCount == 0 means all fish swim freely (no schooling)
+    bool freeSwim = (g_targetSchoolCount == 0);
+
     std::vector<SchoolSeed> schools;
-    int soloCount = (std::max)(1, count / 3);
+    int soloCount = freeSwim ? count : (std::max)(1, count / 3);
     int schoolFishCount = (std::max)(0, count - soloCount);
-    int schoolCount = (std::max)(1, (std::min)(g_targetSchoolCount, (std::max)(1, schoolFishCount)));
+    int schoolCount = freeSwim ? 0 : (std::max)(1, (std::min)(g_targetSchoolCount, (std::max)(1, schoolFishCount)));
     schools.reserve(schoolCount);
     for (int s = 0; s < schoolCount; ++s) {
         float angle = ((float)(rand() % 628) / 100.0f);
@@ -125,10 +128,12 @@ static void RespawnFish(int count, int width, int height) {
             FishType type = (FishType)(rand() % NUM_FISH_TYPES);
             g_fish.emplace_back(type, pos, vel);
             g_fish.back().SetSize(g_sizeMultiplier);
+            g_fish.back().SetSchoolId(-1);
             continue;
         }
 
-        const auto& school = schools[i % schoolCount];
+        int sid = i % schoolCount;
+        const auto& school = schools[sid];
         FishType type = ((rand() % 100) < 82) ? school.type : (FishType)(rand() % NUM_FISH_TYPES);
         Vec2 pos(school.center.x + (float)(rand() % 180 - 90),
                  school.center.y + (float)(rand() % 110 - 55));
@@ -136,6 +141,7 @@ static void RespawnFish(int count, int width, int height) {
                  school.velocity.y + (float)(rand() % 40 - 20));
         g_fish.emplace_back(type, pos, vel);
         g_fish.back().SetSize(g_sizeMultiplier);
+        g_fish.back().SetSchoolId(sid);
     }
 }
 
@@ -154,13 +160,17 @@ static void OnFrameTick() {
 
     static thread_local std::vector<Vec2> fishPos;
     static thread_local std::vector<Vec2> fishVel;
+    static thread_local std::vector<int> fishSchool;
     fishPos.clear();
     fishVel.clear();
+    fishSchool.clear();
     fishPos.reserve(g_fish.size());
     fishVel.reserve(g_fish.size());
+    fishSchool.reserve(g_fish.size());
     for (const auto& f : g_fish) {
         fishPos.push_back(f.Position());
         fishVel.push_back(f.Velocity());
+        fishSchool.push_back(f.SchoolId());
     }
 
     // Update fish
@@ -178,12 +188,15 @@ static void OnFrameTick() {
         BoidsContext ctx;
         ctx.positions      = fishPos.data();
         ctx.velocities     = fishVel.data();
+        ctx.schoolIds      = fishSchool.data();
         ctx.count          = (int)g_fish.size();
         ctx.selfIndex      = i;
+        ctx.selfSchoolId   = fishSchool[i];
         ctx.foodPositions  = foodPos.data();
         ctx.foodCount      = (int)foodPos.size();
         ctx.foodDetectRadius = FOOD_DETECT_RADIUS;
         ctx.avoidForce     = avoid;
+        ctx.freeSwim       = (g_targetSchoolCount == 0);
 
         g_fish[i].Update(dt * g_speedMultiplier, ctx);
     }
@@ -254,6 +267,7 @@ static void OnTrayCommand(int cmdId) {
         case ID_FISH_COUNT_10: SetFishCount(10); break;
         case ID_FISH_COUNT_15: SetFishCount(15); break;
         case ID_FISH_COUNT_20: SetFishCount(20); break;
+        case ID_SCHOOL_COUNT_0: SetSchoolCount(0); break;
         case ID_SCHOOL_COUNT_1: SetSchoolCount(1); break;
         case ID_SCHOOL_COUNT_2: SetSchoolCount(2); break;
         case ID_SCHOOL_COUNT_3: SetSchoolCount(3); break;
