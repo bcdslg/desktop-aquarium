@@ -13,7 +13,13 @@ Desktop Aquarium is a tiny Windows desktop companion that renders animated fish 
 - Tray menu controls for fish count, school count, speed, size, feeding mode, and quit.
 - Native Win32/C++ implementation with Direct2D.
 
+## Download
+
+No installation needed — download the latest `DesktopAquarium.exe` from the **[Releases](https://github.com/bcdslg/desktop-aquarium/releases)** page and run it directly.
+
 ## Requirements
+
+Only needed if building from source:
 
 - Windows 10 or Windows 11.
 - Visual Studio 2022/2026 with C++ desktop development tools, or compatible MSVC toolchain.
