@@ -1,5 +1,7 @@
 # Desktop Aquarium
 
+[中文](README_zh-CN.md) | English
+
 Desktop Aquarium is a tiny Windows desktop companion that renders animated fish on top of your desktop. It uses a transparent layered window, Direct2D drawing, schooling behavior, solo fish, food particles, and a tray menu for quick controls.
 
 ![Desktop Aquarium icon](resources/app.ico)
